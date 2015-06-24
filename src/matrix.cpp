@@ -18,6 +18,7 @@ Matrix<_Tp>::Matrix(int dim_i, int dim_j) {
 	dimI = dim_i;
 	dimJ = dim_j;
 	data = (_Tp*) calloc(dimI * dimJ, sizeof(_Tp));
+	bytes = dimI*dimJ*sizeof(_Tp);
 
 }
 
@@ -28,28 +29,33 @@ template<typename _Tp>
 Matrix<_Tp>::Matrix(const Matrix<_Tp>& arg) :
 		Matrix(arg.getDim_i(), arg.getDim_j()) {
 
+
 	switch (gettype<_Tp>()) {
 	case FLT:
 		cblas_scopy(getDim_i() * getDim_j(), (float*) arg.getMtxData(), 1,
 				(float*) this->data, 1);
 		break;
+
 	case DBL:
-		cblas_dcopy(getDim_i() * getDim_j(), (double*) arg.getMtxData(), 1,
+		cblas_dcopy(dimI * dimJ, (double*) arg.getMtxData(), 1,
 				(double*) this->data, 1);
 		break;
 	case CPLXFLT:
-		cblas_ccopy(getDim_i() * getDim_j(), (void*) arg.getMtxData(), 1,
+		cblas_ccopy(dimI * dimJ, (void*) arg.getMtxData(), 1,
 				(void*) this->data, 1);
+
 		break;
 	case CPLXDBL:
 		cblas_zcopy(getDim_i() * getDim_j(), (void*) arg.getMtxData(), 1,
 				(void*) this->data, 1);
+
 		break;
 	default:
 		throw std::domain_error(
 				"Unsupported data type for matrix copy operation");
 
 	}
+
 
 }
 /*
@@ -88,7 +94,7 @@ _Tp& Matrix<_Tp>::operator()(int i, int j) const {
  *
  */
 template<typename _Tp>
-Matrix<_Tp>& Matrix<_Tp>::operator=(Matrix<_Tp> arg) {
+Matrix<_Tp> Matrix<_Tp>::operator=(Matrix<_Tp>& arg) {
 
 	if (dimI != arg.getDim_i() || dimJ != arg.getDim_j()) {
 		throw std::length_error("Matrix Dimensions do not aggree.");
@@ -123,7 +129,7 @@ Matrix<_Tp>& Matrix<_Tp>::operator=(Matrix<_Tp> arg) {
 
 // overload the multiplication by matrix operator...
 template<typename _Tp>
-Matrix<_Tp> Matrix<_Tp>::operator*(Matrix<_Tp> arg) const {
+Matrix<_Tp> Matrix<_Tp>::operator*(Matrix<_Tp>& arg) const {
 
 	if (dimJ != arg.getDim_i()) {
 		throw std::length_error("Matrix Dimensions do not aggree.");
@@ -173,7 +179,7 @@ Matrix<_Tp> Matrix<_Tp>::operator*(Matrix<_Tp> arg) const {
 
 //overload the addition operator
 template<typename _Tp>
-Matrix<_Tp> Matrix<_Tp>::operator+(Matrix<_Tp> arg) const {
+Matrix<_Tp> Matrix<_Tp>::operator+(Matrix<_Tp>& arg) const {
 
 	if (dimI != arg.getDim_i() || dimJ != arg.getDim_j()) {
 		throw std::length_error("Matrix Dimensions do not aggree.");
@@ -211,7 +217,7 @@ Matrix<_Tp> Matrix<_Tp>::operator+(Matrix<_Tp> arg) const {
 
 //overload the subtraction operator
 template<typename _Tp>
-Matrix<_Tp> Matrix<_Tp>::operator-(Matrix<_Tp> arg) {
+Matrix<_Tp> Matrix<_Tp>::operator-(Matrix<_Tp>& arg) {
 
 	if (dimI != arg.getDim_i() || dimJ != arg.getDim_j()) {
 		throw std::length_error("Matrix Dimensions do not aggree.");

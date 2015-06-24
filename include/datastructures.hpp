@@ -81,7 +81,7 @@ class Matrix {
 
 	//define the data container... -> column wise ordered
 	// M*N matrix of complex numbers
-	int dimI, dimJ;
+	int dimI, dimJ,bytes;
 	_Tp* data;
 public:
 
@@ -110,19 +110,19 @@ public:
 
 	// make the asignment operator copy the data...
 	// coppies the data from lhs to rhs...
-	Matrix<_Tp>& operator=(Matrix<_Tp> arg);
+	Matrix<_Tp> operator=(Matrix<_Tp>& arg);
 
 	// make the function call operator retrive the i,j th data element
 	_Tp& operator()(int i, int j) const;
 
 	// overload the multiplication by matrix operator...
-	Matrix<_Tp> operator*(Matrix<_Tp> arg) const;
+	Matrix<_Tp> operator*(Matrix<_Tp>& arg) const;
 	//overload the addition operator
-	Matrix<_Tp> operator+(Matrix<_Tp> arg) const;
+	Matrix<_Tp> operator+(Matrix<_Tp>& arg) const;
 
-	dat::Matrix<_Tp> operator*(_Tp lhs);
+	Matrix<_Tp> operator*(_Tp lhs);
 	//overload the subtraction operator
-	Matrix<_Tp> operator-(Matrix<_Tp> arg);
+	Matrix<_Tp> operator-(Matrix<_Tp>& arg);
 
 	//overload the print operator
 	friend std::ostream& operator<<(std::ostream& os,
@@ -144,6 +144,7 @@ public:
 		int M = rhs.dimI;
 		int N = rhs.dimJ;
 		int type = gettype<_Tp>();
+//		std::cout<< "RHS is a " <<M <<"x" << N <<" dimensional mtx. Storage space (bytes) = " << rhs.bytes <<"\n";
 
 		//because of the templated nature
 		switch (type) {
@@ -155,10 +156,10 @@ public:
 					1);
 			break;
 		case CPLXFLT:
-			cblas_cscal(N * M, (void*) &lhs, (void*) res.getMtxData(), 1);
+			cblas_cscal(N * M, (void*) &lhs,  (void*)(res.data), 1);
 			break;
 		case CPLXDBL:
-			cblas_zscal(N * M, (void*) &lhs, (void*) res.getMtxData(), 1);
+			cblas_zscal(N * M, (void*) &lhs,  (void*)(res.data), 1);
 			break;
 		default:
 			throw std::domain_error("Unsupported matrix scale operation");
