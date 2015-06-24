@@ -1,0 +1,40 @@
+
+CDIR=src/
+BINDIR=build/
+INCDIR=./include:~/libraries/gsl-1.9/install/include
+LIBDIR=./lib:~/libraries/gsl-1.9/install/lib
+
+
+# Include files
+SOURCES=main.cpp
+# Compiler
+
+CC=g++
+
+CFLAGS=-Werror -pedantic -Wall -I$(INCDIR)
+
+# Linker flags
+LDFLAGS= -L$(LIBDIR)  -lblas -lcblas
+
+OBJECTS=$(SOURCES:.cpp=.o)
+BINOBJECTS=$(patsubst %.o,$(BINDIR)%.o,$(OBJECTS))
+EXECUTABLE=main
+
+
+LINK=$(CC) $(BINOBJECTS) -o lhs $(LDFLAGS)
+COMPILE=$(CC) $(CFLAGS) -c rhs -o $(BINDIR)$@
+
+all: $(EXECUTABLE)
+
+print:
+	@echo "COMPILECOMMAND =" $(COMPILE)
+	@echo "LINKCOMMAND =" $(LINK) 
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(BINOBJECTS) -o $@ $(LDFLAGS)
+
+clean:
+	rm -f $(BINOBJECTS) $(EXECUTABLE)
+
+$(OBJECTS): %.o : $(SRCDIR)%.cpp
+	$(CC) $(CFLAGS) -c $< -o $(BINDIR)$@ 
