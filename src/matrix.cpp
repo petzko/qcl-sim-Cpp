@@ -12,6 +12,21 @@ using namespace dat;
 /**
  * the standard constructor - takes a row and column dimension.
  */
+
+std::ostream& operator<<(std::ostream& out, complex double nr) {
+
+	out << "(" << creal(nr) << ";" << cimag(nr) << ")";
+	return out;
+}
+
+std::ostream& operator<<(std::ostream& out, complex float nr) {
+	out << "(" << creal(nr) << ";" << cimag(nr) << ")";
+	return out;
+}
+
+
+
+
 template<typename _Tp>
 Matrix<_Tp>::Matrix(int dim_i, int dim_j) {
 

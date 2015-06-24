@@ -25,6 +25,11 @@ const int DBL = 1;
 const int CPLXFLT = 2;
 const int CPLXDBL = 3;
 
+
+
+std::ostream& operator<<(std::ostream& out, complex double nr);
+std::ostream& operator<<(std::ostream& out, complex float nr);
+
 template<typename _Tp>
 int gettype() {
 
@@ -46,29 +51,7 @@ int gettype() {
 
 }
 
-template<typename _Tp>
-char* bytewisecopy(_Tp* val, int type, int length) {
-	unsigned int bytesize = 0;
 
-	if (type == FLT)
-		bytesize = sizeof(float);
-	else if (type == DBL)
-		bytesize = sizeof(double);
-	else if (type == CPLXFLT)
-		bytesize = sizeof(complex float);
-	else if (type == CPLXDBL)
-		bytesize = sizeof(complex double);
-
-	char* result = NULL;
-	if (bytesize > 0) {
-		char* vval = (char*) val;
-		//copy only the relevant bytes!!!
-		result = (char*) malloc(length * bytesize);
-
-	}
-	return result;
-
-}
 
 /***************************************************************
  * Usual 2D matrix of size dimI x dimJ
