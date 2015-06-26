@@ -25,8 +25,6 @@ const int DBL = 1;
 const int CPLXFLT = 2;
 const int CPLXDBL = 3;
 
-
-
 std::ostream& operator<<(std::ostream& out, complex double nr);
 std::ostream& operator<<(std::ostream& out, complex float nr);
 
@@ -51,11 +49,8 @@ int gettype() {
 
 }
 
-
-
 /***************************************************************
  * Usual 2D matrix of size dimI x dimJ
- *
  ***************************************************************/
 namespace dat {
 
@@ -64,48 +59,90 @@ class Matrix {
 
 	//define the data container... -> column wise ordered
 	// M*N matrix of complex numbers
-	int dimI, dimJ,bytes;
-	_Tp* data;
-public:
+	int dimI, dimJ, bytes;
+	int k1, k2, n1, n2;
+	bool view;
+	_Tp** view_data;
+	_Tp** data;
 
-	int getDim_i() const {
-		return dimI;
+private:
+
+	/*
+	 * This function returns
+	 * a matrix view, or a submatrix, of the matrix m.
+	 *
+	 * The upper-left element of the submatrix is the element (k1,k2) of the original matrix.
+	 * The submatrix has n1 rows and n2 columns.
+	 * The physical number of columns in memory given by dimJ is unchanged.
+	 * Mathematically, the (i,j)-th element of the new matrix is given by,
+	 * m'(i,j) = m->data[(k1*m->tda + k2) + i*m->tda + j]
+	 *
+	 */
+
+
+	Matrix(Matrix<_Tp> m, int i1, int j1, int nrows, int ncols);
+
+public:
+	int getDim_i() const;
+	int getDim_j() const;
+
+	_Tp** const getMtxData() const;
+
+	int getBytesize() const {
+		return bytes;
 	}
-	int getDim_j() const {
-		return dimJ;
+
+	bool isview() const {
+		return view;
 	}
 
 	bool square() const {
 		return dimI == dimJ;
 	}
 
-	_Tp* getMtxData() const {
-		return data;
-	}
-
 	// initialize an empty complex Nr matrix
 	Matrix(int dim_i, int dim_j);
 	// copy constructor
 	Matrix(const Matrix<_Tp>& arg);
+
 	~Matrix();
 
-	// overload some operators for convenience
+	/**
+	 * Overload the assignment operator!! Extremely important in order to be able to correctly execute arithmetic operations on matrices with  syntax!!!
+	 *
+	 *
+	 */
+	void operator=(const Matrix<_Tp>& arg);
 
-	// make the asignment operator copy the data...
-	// coppies the data from lhs to rhs...
-	Matrix<_Tp> operator=(Matrix<_Tp>& arg);
-
-	// make the function call operator retrive the i,j th data element
+	/**
+	 * Return a reference (implicit pointer) to the i,j-th data element
+	 * so that the user can actually overwrite the corresponding entry
+	 *
+	 */
 	_Tp& operator()(int i, int j) const;
 
-	// overload the multiplication by matrix operator...
-	Matrix<_Tp> operator*(Matrix<_Tp>& arg) const;
-	//overload the addition operator
-	Matrix<_Tp> operator+(Matrix<_Tp>& arg) const;
 
-	Matrix<_Tp> operator*(_Tp lhs);
+	/**
+	 * Overload the function call operator ->  indices
+	 *
+	 *	@param i1 - the row index of the upper left element of the submatrix
+	 *  @param j1 - the col index of the upper right element of the submatrix
+	 *  @param nrows - number of rows of the submatrix;
+	 *  @param ncols - number of cols of the submatrix;
+	 *  @return - a pointer to
+	 */
+
+
+	Matrix<_Tp> operator()(int k1, int k2,int n1,int n2);
+
+
+	// overload the multiplication by matrix operator...
+	Matrix<_Tp> operator*(const Matrix<_Tp>& arg) const;
+	//overload the addition operator
+	Matrix<_Tp> operator+(const Matrix<_Tp>& arg) const;
+
 	//overload the subtraction operator
-	Matrix<_Tp> operator-(Matrix<_Tp>& arg);
+	Matrix<_Tp> operator-(const Matrix<_Tp>& arg);
 
 	//overload the print operator
 	friend std::ostream& operator<<(std::ostream& os,
@@ -114,35 +151,35 @@ public:
 		int dimCOL = obj.getDim_j();
 		for (int i = 0; i < dimROW; i++) {
 			for (int j = 0; j < dimCOL; j++)
-				os << obj.data[i * dimCOL + j] << " ";
+				os << obj.getMtxData()[i][j] << " ";
 			os << "\n";
 		}
 
 		return os;
 	}
 
-	friend Matrix<_Tp> operator*(_Tp lhs, Matrix<_Tp>& rhs) {
+	friend Matrix<_Tp> operator*(_Tp lhs, const Matrix<_Tp>& rhs) {
 
 		dat::Matrix<_Tp> res = rhs;
-		int M = rhs.dimI;
-		int N = rhs.dimJ;
+		int M = rhs.getDim_i();
+		int N = rhs.getDim_j();
 		int type = gettype<_Tp>();
 //		std::cout<< "RHS is a " <<M <<"x" << N <<" dimensional mtx. Storage space (bytes) = " << rhs.bytes <<"\n";
 
 		//because of the templated nature
 		switch (type) {
 		case FLT:
-			cblas_sscal(N * M, explicit_cast(float,lhs), (float*) res.data, 1);
+			cblas_sscal(N * M, explicit_cast(float,lhs), (float*) *res.data, 1);
 			break;
 		case DBL:
-			cblas_dscal(N * M, explicit_cast(double,lhs), (double*) res.data,
+			cblas_dscal(N * M, explicit_cast(double,lhs), (double*) *res.data,
 					1);
 			break;
 		case CPLXFLT:
-			cblas_cscal(N * M, (void*) &lhs,  (void*)(res.data), 1);
+			cblas_cscal(N * M, (void*) &lhs, (void*) (*res.data), 1);
 			break;
 		case CPLXDBL:
-			cblas_zscal(N * M, (void*) &lhs,  (void*)(res.data), 1);
+			cblas_zscal(N * M, (void*) &lhs, (void*) (*res.data), 1);
 			break;
 		default:
 			throw std::domain_error("Unsupported matrix scale operation");
@@ -151,7 +188,7 @@ public:
 
 	}
 
-	friend Matrix<_Tp> operator*(Matrix<_Tp>& lhs, _Tp rhs) {
+	friend Matrix<_Tp> operator*(Matrix<_Tp> lhs, _Tp rhs) {
 		return rhs * lhs;
 	}
 
@@ -169,156 +206,4 @@ dat::Matrix<_Tp> eye(unsigned int M) {
 	return res;
 }
 
-/**
- template<typename _Tp>
- dat::Matrix<_Tp> scalarmultiply(dat::Matrix<_Tp> A, dat::Matrix<_Tp> B){
-
- int M = A.getDim_i();
- int N = A.getDim_j();
- int K = B.getDim_i();
- int L = B.getDim_j();
-
- if (M != K || N != L){
- throw std::length_error("Matrix Dimensions do not aggree.");
- }
-
- dat::Matrix<_Tp> res(M,N);
-
- for (int i = 0; i < M ; i++)
- for(int j = 0; j< N; j++)
- res(i,j) = A(i,j)*B(i,j);
-
- return res;
- }
- */
-
-// here the dereferencing operator shall mean conjugate transpose...
-/*
- template<typename _Tp>
- dat::Matrix<_Tp> operator!(dat::Matrix<_Tp>& arg) {
-
- if (!arg.square()) {
- std::cout
- << "Cannot transpose a non-square matrix. Aborting \n";
- throw std::domain_error("Cannot transp a non-square matrix. Abort or handle exception!");
- }
-
- int M = arg.getDim_i();
- dat::Matrix<_Tp> res(M, M);
- // PETZ : TODO -> use a built in GSL routine for matrix hermitian !
- for (int i = 0; i < M; i++)
- for (int j = i + 1; j < M; j++) {
- res(j, i) = (_Tp) conj(arg(i, j));
- res(i, j) = (_Tp) conj(arg(j, i));
- }
- return res;
-
- }
- */
-/****************************************************************
- * A 3D matrix of size dimI x dimJ x dimK (usually representing a 3D grid)
- *
- ***************************************************************/
-
-/***
- namespace dat {
-
- template<typename _Tp>
- class Grid {
-
- //define the data container... -> column wise ordered
- // M*N matrix of complex numbers
- std::vector<int> dim;
- std::vector<int> offset;
- _Tp* data;
-
- public:
-
- inline int getDim(int i) const {
- return dim[i];
- }
- _Tp* getMtxData() const {
- return data;
- }
-
- _Tp* getVector(int direction, int pos_1, int pos_2) const;
-
- // initialize an empty complex Nr matrix
- Grid(int dim_i, int dim_j, int dim_k);
- Grid(int dim_i, int dim_j, int dim_k,_Tp val);
- // copy constructor
- Grid(const Grid<_Tp>& arg);
- ~Grid();
-
- // overload some operators for convenience
-
- // make the asignment operator copy the data...
- // coppies the data from lhs to rhs...
- Grid<_Tp>& operator=(Grid<_Tp> arg);
-
- // make the function call operator retrive the i,j th data element
- _Tp& operator()(int i, int j, int k) const;
-
- //overload the addition operator
- Grid<_Tp> operator+(Grid<_Tp> arg) const;
-
- //overload the subtraction operator
- Grid<_Tp> operator-(Grid<_Tp> arg) const;
-
- Grid<_Tp> operator*(Grid<_Tp> arg) const;
-
- // overload the multiplication operator
- //	Grid<_Tp> operator*(Grid<_Tp> arg) const;
-
- //overload the print operator
-
- friend std::ostream& operator<<(std::ostream& os,
- const dat::Grid<_Tp>& obj) {
-
- int dimI = obj.getDim(0);
- int dimJ = obj.getDim(1);
- int dimK = obj.getDim(2);
-
- for (int i = 0; i < dimI; i++) {
- for (int j = 0; j < dimJ; j++) {
- for (int k = 0; k < dimK; k++) {
- os << obj.data[k + j * dimI + i * dimJ * dimI] << " ";
- }
-
- os << "\n";
- }
-
- os << "\n";
- }
-
- return os;
- }
-
- }
- ;
-
- }
-
- template<typename _Tp>
- dat::Grid<_Tp> operator*(const _Tp & lhs, dat::Grid<_Tp>& rhs) {
-
- dat::Grid<_Tp> res = rhs;
- int dimI = res.getDim(0);
- int dimJ = res.getDim(1);
- int dimK = res.getDim(2);
-
- for (int i = 0; i < dimI; i++)
- for (int j = 0; j < dimJ; j++)
- for(int k = 0;k<dimK;k++)
- res(i, j,k) *= lhs;
-
- return res;
-
- }
-
- template<typename _Tp>
- dat::Grid<_Tp> operator*(dat::Grid<_Tp>& lhs, const _Tp& rhs) {
- return rhs * lhs;
- }
- */
 #endif
