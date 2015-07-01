@@ -26,48 +26,39 @@ std::ostream& operator<<(std::ostream& out, complex float nr) {
 
 template<typename _Tp>
 int Matrix<_Tp>::getDim_i() const {
-	if (view)
-		return n1;
-	else
-		return dimI;
+	return dimI;
 }
 
 template<typename _Tp>
 int Matrix<_Tp>::getDim_j() const {
-	if (view)
-		return n2;
-	else
-		return dimJ;
+	return dimJ;
 }
 
 template<typename _Tp>
 _Tp** const Matrix<_Tp>::getMtxData() const {
-	if (view)
-		return view_data;
-	else
-		return data;
+	return data;
+}
+
+template<typename _Tp>
+void Matrix<_Tp>::init(int dim_i, int dim_j) {
+
+	dimI = dim_i;
+	dimJ = dim_j;
+	view = false;
+
+	_Tp* tmp_data = (_Tp*) calloc(dimI * dimJ, sizeof(_Tp));
+	data = (_Tp**) calloc(dimI, sizeof(_Tp*));
+
+	for (int i = 0; i < dimI; i++)
+		data[i] = tmp_data + i * dimJ;
+
+	bytes = dimI * dimJ * sizeof(_Tp);
 }
 
 template<typename _Tp>
 Matrix<_Tp>::Matrix(int dim_i, int dim_j) {
 
-	dimI = dim_i;
-	dimJ = dim_j;
-	view = false;
-	k1 = 0;
-	k2 = 0;
-	n1 = dimI;
-	n2 = dimJ;
-
-	_Tp* tmp_data = (_Tp*) calloc(dimI * dimJ, sizeof(_Tp));
-	data = (_Tp**) calloc(dimI, sizeof(_Tp*));
-	view_data = NULL;
-
-	for (int i = 0; i < dimI; i++)
-		data[i] = tmp_data + i * dimJ;
-
-	tmp_data = NULL; // delete this pointer!
-	bytes = dimI * dimJ * sizeof(_Tp);
+	init(dim_i, dim_j);
 
 }
 
@@ -75,22 +66,20 @@ template<typename _Tp>
 dat::Matrix<_Tp>::Matrix(Matrix<_Tp> m, int i1, int i2, int j1, int j2) {
 
 	view = true;
+	int k1 = i1;
+	int k2 = j1;
+	int n1 = i2 - i1 + 1;
+	int n2 = j2 - j1 + 1;
 
-	dimI = m.getDim_i();
-	dimJ = m.getDim_j();
+	dimI = n1;
+	dimJ = n2;
 
-	this->k1 = i1;
-	this->k2 = j1;
-	this->n1 = i2 - i1 + 1;
-	this->n2 = j2 - j1 + 1;
-
-	data = NULL;
-
-	view_data = (_Tp**) calloc(n1, sizeof(_Tp));
+	data = (_Tp**) calloc(n1, sizeof(_Tp));
 	bytes = n1 * n2 * sizeof(_Tp);
 
+	// copy the pointers NOT the data !!!!
 	for (int i = 0; i < n1; i++)
-		view_data[i] = m.getMtxData()[i + k1] + k2;
+		data[i] = m.getMtxData()[i + k1] + k2;
 
 }
 
@@ -107,7 +96,7 @@ Matrix<_Tp> Matrix<_Tp>::operator()(int i1, int i2, int j1, int j2) {
 		throw std::out_of_range("array index out of bounds.");
 
 	}
-
+	// calls the COPY CONSTRUCTOR!!!
 	Matrix<_Tp> res = Matrix(*this, i1, i2, j1, j2);
 	return res;
 
@@ -117,8 +106,24 @@ Matrix<_Tp> Matrix<_Tp>::operator()(int i1, int i2, int j1, int j2) {
  *	Copy constructor
  */
 template<typename _Tp>
-Matrix<_Tp>::Matrix(const Matrix<_Tp>& arg) :
-		Matrix(arg.getDim_i(), arg.getDim_j()) {
+Matrix<_Tp>::Matrix(const Matrix<_Tp>& arg) {
+
+	if (arg.isview()) {
+		view = true;
+
+		dimI = arg.getDim_i();
+		dimJ = arg.getDim_j();
+
+		data = (_Tp**) calloc(dimI, sizeof(_Tp));
+		bytes = dimI * dimJ * sizeof(_Tp);
+
+		for (int i = 0; i < dimI; i++)
+			data[i] = arg.getMtxData()[i];
+		return;
+	}
+
+
+	init(arg.dimI, arg.dimJ);
 
 	switch (gettype<_Tp>()) {
 	case FLT:
@@ -161,7 +166,8 @@ template<typename _Tp>
 Matrix<_Tp>::~Matrix() {
 
 	if (view)
-		free(view_data); // free the pointers to the data
+		// could cause a memeory leak !!! as pointers to data are not freed!
+		data =  NULL;
 	else {
 		free(data); // free the whole data!
 // no need for a for loop as data is contiguously allocated
@@ -190,9 +196,6 @@ _Tp& Matrix<_Tp>::operator()(int i, int j) const {
 		throw std::out_of_range("column index out of bounds.");
 	}
 
-	if (view)
-		return view_data[i][j];
-	else
 		return data[i][j];
 
 }
@@ -202,6 +205,11 @@ _Tp& Matrix<_Tp>::operator()(int i, int j) const {
  */
 template<typename _Tp>
 void Matrix<_Tp>::operator=(const Matrix<_Tp>& arg) {
+
+	if (arg.isview())
+		for (int i = 0; i < dimI; i++){
+			data[i] = arg.getMtxData()[i];
+		}
 
 	if (this->getDim_i() != arg.getDim_i()
 			|| this->getDim_j() != arg.getDim_j()) {

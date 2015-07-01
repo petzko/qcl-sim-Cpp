@@ -60,12 +60,11 @@ class Matrix {
 	//define the data container... -> column wise ordered
 	// M*N matrix of complex numbers
 	int dimI, dimJ, bytes;
-	int k1, k2, n1, n2;
 	bool view;
-	_Tp** view_data;
 	_Tp** data;
 
 private:
+	void init(int dim_i, int dim_j);
 	/*
 	 * This function returns
 	 * a matrix view, or a submatrix, of the matrix m.
@@ -141,12 +140,14 @@ public:
 	 *  @return - a submatrix object of the current matrix with indices (i1,j1)-->(i2,j2)!
 	 *
 	 */
-
 	Matrix<_Tp> operator()(int i1, int i2,int j1,int j2);
+
 	// overload the multiplication by matrix operator...
 	Matrix<_Tp> operator*(const Matrix<_Tp>& arg) const;
+
 	//overload the addition operator
 	Matrix<_Tp> operator+(const Matrix<_Tp>& arg) const;
+
 	//overload the subtraction operator
 	Matrix<_Tp> operator-(const Matrix<_Tp>& arg);
 

@@ -1,31 +1,20 @@
 #include <iostream>
 #include <datastructures.hpp>
 
+using namespace std;
+using namespace dat;
+
 int main() {
-	dat::Matrix< complex float> M1 = eye< complex float>(5);
-	dat::Matrix< complex float> M2 = (3 + I) * M1;
+	dat::Matrix<  float> M1 = eye<  float>(5);
 
-	std::cout << "M1: \n";
-	std::cout << M1;
-	std::cout << "M2: \n";
-	std::cout << M2;
-	std::cout << "M1+M2: \n";
-	std::cout << M2 + 2 * M1 + 3 * M2;
-	std::cout << "M1-M2: \n";
-	std::cout << M1 - M2;
-	std::cout << "M1*M2: \n";
-	std::cout << M1 * M2;
-	std::cout << "M2*M2: \n";
-	std::cout << M2 * M2 * M2;
+	dat::Matrix< float> m1view = M1(0,1,0,1);
+	m1view(0,1) = 1; //<- shall change the state of M1
 
-	std::cout << "M2[0:4,0:4] \n";
-	std::cout << M2(0,4,0,4);
-	std::cout << "M2[0:4,1:2] \n";
-	std::cout <<  M2(0, 4, 1, 2);
+	cout << M1;
 
-	M2(0, 2, 0, 2)(0,0) = -1;
-	std::cout << "M2: \n";
-	std::cout<<M2;
+	cout << m1view;
+
+	cout << M1;
 
 }
 
