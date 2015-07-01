@@ -66,21 +66,29 @@ class Matrix {
 	_Tp** data;
 
 private:
-
 	/*
 	 * This function returns
 	 * a matrix view, or a submatrix, of the matrix m.
 	 *
-	 * The upper-left element of the submatrix is the element (k1,k2) of the original matrix.
+	 * UL element of the submatrix is (i1,j1) whereas the lower right LR is (i2,j2).
+	 *
+	 * The user must make sure that the following relations hold:
+	 *
+	 * 0<=i1<=i2<=dimI and 0<=j1<=j2M=dimJ
+	 *
+	 *
 	 * The submatrix has n1 rows and n2 columns.
+	 * where n1 = i2-i1+1; n2 = j2-j1+1;
+	 *
 	 * The physical number of columns in memory given by dimJ is unchanged.
 	 * Mathematically, the (i,j)-th element of the new matrix is given by,
-	 * m'(i,j) = m->data[(k1*m->tda + k2) + i*m->tda + j]
+	 * m'(i,j) = m->data[(i1*dimJ + j1) + i*dimJ + j]
+	 * where dimJ is the number of colums in the original matrix m!!!
 	 *
 	 */
 
+	Matrix(Matrix<_Tp> m, int i1, int i2, int j1, int j2);
 
-	Matrix(Matrix<_Tp> m, int i1, int j1, int nrows, int ncols);
 
 public:
 	int getDim_i() const;
@@ -105,6 +113,8 @@ public:
 	// copy constructor
 	Matrix(const Matrix<_Tp>& arg);
 
+
+
 	~Matrix();
 
 	/**
@@ -117,30 +127,26 @@ public:
 	/**
 	 * Return a reference (implicit pointer) to the i,j-th data element
 	 * so that the user can actually overwrite the corresponding entry
-	 *
 	 */
-	_Tp& operator()(int i, int j) const;
 
+	_Tp& operator()(int i, int j) const;
 
 	/**
 	 * Overload the function call operator ->  indices
 	 *
-	 *	@param i1 - the row index of the upper left element of the submatrix
-	 *  @param j1 - the col index of the upper right element of the submatrix
-	 *  @param nrows - number of rows of the submatrix;
-	 *  @param ncols - number of cols of the submatrix;
-	 *  @return - a pointer to
+	 *	@param i1 - the row index of the upper left element  of the	submatrix
+	 *  @param j1 - the col index of the upper left element  of the	submatrix
+	 *  @param i2 - the row index of the lower right element of the submatrix;
+	 *  @param j2 - the col index of the lower right element of the submatrix;
+	 *  @return - a submatrix object of the current matrix with indices (i1,j1)-->(i2,j2)!
+	 *
 	 */
 
-
-	Matrix<_Tp> operator()(int k1, int k2,int n1,int n2);
-
-
+	Matrix<_Tp> operator()(int i1, int i2,int j1,int j2);
 	// overload the multiplication by matrix operator...
 	Matrix<_Tp> operator*(const Matrix<_Tp>& arg) const;
 	//overload the addition operator
 	Matrix<_Tp> operator+(const Matrix<_Tp>& arg) const;
-
 	//overload the subtraction operator
 	Matrix<_Tp> operator-(const Matrix<_Tp>& arg);
 

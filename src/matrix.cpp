@@ -71,32 +71,22 @@ Matrix<_Tp>::Matrix(int dim_i, int dim_j) {
 
 }
 
-/*
- * This function returns
- * a matrix view, or a submatrix, of the matrix m.
- *
- * The upper-left element of the submatrix is the element (k1,k2) of the original matrix.
- * The submatrix has n1 rows and n2 columns.
- * The physical number of columns in memory given by dimJ is unchanged.
- * Mathematically, the (i,j)-th element of the new matrix is given by,
- * m'(i,j) = m->data[(k1*m->tda + k2) + i*m->tda + j]
- *
- */
-
 template<typename _Tp>
-Matrix<_Tp>::Matrix(Matrix<_Tp> m, int k1, int k2, int n1, int n2) {
-/// TODO: IMPLEMENT THE VIEW !!!
+dat::Matrix<_Tp>::Matrix(Matrix<_Tp> m, int i1, int i2, int j1, int j2) {
+
 	view = true;
 
 	dimI = m.getDim_i();
 	dimJ = m.getDim_j();
-	this->k1 = k1;
-	this->k2 = k2;
-	this->n1 = n1;
-	this->n2 = n2;
-	data = NULL;
-	view_data = (_Tp**) calloc(n1, sizeof(_Tp));
 
+	this->k1 = i1;
+	this->k2 = j1;
+	this->n1 = i2 - i1 + 1;
+	this->n2 = j2 - j1 + 1;
+
+	data = NULL;
+
+	view_data = (_Tp**) calloc(n1, sizeof(_Tp));
 	bytes = n1 * n2 * sizeof(_Tp);
 
 	for (int i = 0; i < n1; i++)
@@ -105,9 +95,20 @@ Matrix<_Tp>::Matrix(Matrix<_Tp> m, int k1, int k2, int n1, int n2) {
 }
 
 template<typename _Tp>
-Matrix<_Tp> Matrix<_Tp>::operator()(int k1, int k2, int n1, int n2) {
+Matrix<_Tp> Matrix<_Tp>::operator()(int i1, int i2, int j1, int j2) {
 
-	Matrix<_Tp> res = Matrix(*this, k1, k2, n1, n2);
+	// index out of bounds error check
+	if (i1 < 0 || i2 - i1 < 0 || i2 >= dimI || j1 < 0 || j2 - j1 < 0
+			|| j2 >= dimJ) {
+
+		DATASTRUCT_OUT_ERR(
+				"Array index out of bounds. Cannot generate submatrix-view with that dimensions. ",
+				__FILE__, __LINE__)
+		throw std::out_of_range("array index out of bounds.");
+
+	}
+
+	Matrix<_Tp> res = Matrix(*this, i1, i2, j1, j2);
 	return res;
 
 }
