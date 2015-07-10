@@ -5,15 +5,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/main.cpp \
-../src/matrix.cpp 
+../src/matrix.cpp \
+../src/matrixview.cpp 
 
 OBJS += \
 ./src/main.o \
-./src/matrix.o 
+./src/matrix.o \
+./src/matrixview.o 
 
 CPP_DEPS += \
 ./src/main.d \
-./src/matrix.d 
+./src/matrix.d \
+./src/matrixview.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

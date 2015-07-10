@@ -1,5 +1,6 @@
 src/main.d: ../src/main.cpp \
- /home/petzko/workspace/qcl-sim-cpp/include/datastructures.hpp \
+ /home/petzko/workspace/qcl-sim-cpp/include/matrix.hpp \
+ /home/petzko/workspace/qcl-sim-cpp/include/utils.hpp \
  /home/petzko/libraries/gsl-1.9/install/include/gsl/gsl_cblas.h \
  /home/petzko/libraries/gsl-1.9/install/include/gsl/gsl_vector.h \
  /home/petzko/libraries/gsl-1.9/install/include/gsl/gsl_vector_complex_long_double.h \
@@ -36,7 +37,9 @@ src/main.d: ../src/main.cpp \
  /home/petzko/libraries/gsl-1.9/install/include/gsl/gsl_vector_char.h \
  /home/petzko/libraries/gsl-1.9/install/include/gsl/gsl_block_char.h
 
-/home/petzko/workspace/qcl-sim-cpp/include/datastructures.hpp:
+/home/petzko/workspace/qcl-sim-cpp/include/matrix.hpp:
+
+/home/petzko/workspace/qcl-sim-cpp/include/utils.hpp:
 
 /home/petzko/libraries/gsl-1.9/install/include/gsl/gsl_cblas.h:
 

@@ -1,4 +1,5 @@
-src/matrix.d: ../src/matrix.cpp \
+src/matrixview.d: ../src/matrixview.cpp \
+ /home/petzko/workspace/qcl-sim-cpp/include/matrixview.hpp \
  /home/petzko/workspace/qcl-sim-cpp/include/matrix.hpp \
  /home/petzko/workspace/qcl-sim-cpp/include/utils.hpp \
  /home/petzko/libraries/gsl-1.9/install/include/gsl/gsl_cblas.h \
@@ -36,6 +37,8 @@ src/matrix.d: ../src/matrix.cpp \
  /home/petzko/libraries/gsl-1.9/install/include/gsl/gsl_block_uchar.h \
  /home/petzko/libraries/gsl-1.9/install/include/gsl/gsl_vector_char.h \
  /home/petzko/libraries/gsl-1.9/install/include/gsl/gsl_block_char.h
+
+/home/petzko/workspace/qcl-sim-cpp/include/matrixview.hpp:
 
 /home/petzko/workspace/qcl-sim-cpp/include/matrix.hpp:
 
