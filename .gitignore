@@ -14,3 +14,10 @@
 *.swp
 *.swo
 *.sw*
+.project
+.cproject
+makefile
+*.mk
+*.d
+*.exe
+*.out
